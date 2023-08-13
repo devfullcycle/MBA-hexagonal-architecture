@@ -1,0 +1,21 @@
+
+type Query {
+    customerOfId(id: ID!): Customer
+}
+
+type Mutation {
+    createCustomer(input: CustomerInput): Customer!
+}
+
+type Customer {
+    id: ID!
+    name: String
+    email: String
+    cpf: String
+}
+
+input CustomerInput {
+    name: String
+    email: String
+    cpf: String
+}
