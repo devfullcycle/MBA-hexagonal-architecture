@@ -5,31 +5,19 @@ import br.com.fullcycle.hexagonal.application.exceptions.ValidationException;
 public class Customer {
 
     private CustomerId customerId;
-    private String name;
-    private String cpf;
-    private String email;
+    private Name name;
+    private Cpf cpf;
+    private Email email;
 
     public Customer(final CustomerId customerId, final String name, final String cpf, final String email) {
         if (customerId == null) {
             throw new ValidationException("Invalid customerId for Customer");
         }
 
-        if (name == null) {
-            throw new ValidationException("Invalid name for Customer");
-        }
-
-        if (cpf == null || !cpf.matches("^\\d{3}\\.\\d{3}\\.\\d{3}\\-\\d{2}$")) {
-            throw new ValidationException("Invalid cpf for Customer");
-        }
-
-        if (email == null || !email.matches("^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$")) {
-            throw new ValidationException("Invalid email for Customer");
-        }
-
         this.customerId = customerId;
-        this.name = name;
-        this.cpf = cpf;
-        this.email = email;
+        this.name = new Name(name);
+        this.cpf = new Cpf(cpf);
+        this.email = new Email(email);
     }
 
     public static Customer newCustomer(String name, String cpf, String email) {
@@ -40,15 +28,15 @@ public class Customer {
         return customerId;
     }
 
-    public String name() {
+    public Name name() {
         return name;
     }
 
-    public String cpf() {
+    public Cpf cpf() {
         return cpf;
     }
 
-    public String email() {
+    public Email email() {
         return email;
     }
 }
