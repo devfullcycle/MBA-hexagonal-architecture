@@ -28,7 +28,7 @@ public class CreatePartnerUseCase extends UseCase<CreatePartnerUseCase.Input, Cr
         var partner = partnerRepository.create(Partner.newPartner(input.name, input.cnpj, input.email));
 
         return new Output(
-                partner.partnerId().value().toString(),
+                partner.partnerId().value(),
                 partner.cnpj().value(),
                 partner.email().value(),
                 partner.name().value()

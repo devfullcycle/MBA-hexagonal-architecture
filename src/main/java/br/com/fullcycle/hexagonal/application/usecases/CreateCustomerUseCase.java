@@ -27,7 +27,7 @@ public class CreateCustomerUseCase
         var customer = customerRepository.create(Customer.newCustomer(input.name, input.cpf, input.email));
 
         return new Output(
-                customer.customerId().value().toString(),
+                customer.customerId().value(),
                 customer.cpf().value(),
                 customer.email().value(),
                 customer.name().value()

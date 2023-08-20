@@ -34,7 +34,8 @@ public class UseCaseConfig {
 
     @Bean
     public CreateEventUseCase createEventUseCase() {
-        return new CreateEventUseCase(eventService, partnerService);
+        // TODO: Fix dependency
+        return new CreateEventUseCase(null, null);
     }
 
     @Bean

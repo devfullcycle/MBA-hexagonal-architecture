@@ -4,7 +4,7 @@ import br.com.fullcycle.hexagonal.application.exceptions.ValidationException;
 
 public class Partner {
 
-    private PartnerId partnerId;
+    private final PartnerId partnerId;
     private Name name;
     private Cnpj cnpj;
     private Email email;
