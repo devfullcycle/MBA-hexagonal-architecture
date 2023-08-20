@@ -1,7 +1,7 @@
 package br.com.fullcycle.hexagonal.application.repositories;
 
-import br.com.fullcycle.hexagonal.application.entities.Event;
-import br.com.fullcycle.hexagonal.application.entities.EventId;
+import br.com.fullcycle.hexagonal.application.domain.Event;
+import br.com.fullcycle.hexagonal.application.domain.EventId;
 
 import java.util.Optional;
 

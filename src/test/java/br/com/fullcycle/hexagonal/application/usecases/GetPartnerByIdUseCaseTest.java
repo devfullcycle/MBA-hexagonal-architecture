@@ -1,16 +1,12 @@
 package br.com.fullcycle.hexagonal.application.usecases;
 
 import br.com.fullcycle.hexagonal.application.InMemoryPartnerRepository;
-import br.com.fullcycle.hexagonal.application.entities.Partner;
+import br.com.fullcycle.hexagonal.application.domain.Partner;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import java.util.Optional;
 import java.util.UUID;
-
-import static org.mockito.Mockito.when;
 
 class GetPartnerByIdUseCaseTest {
 

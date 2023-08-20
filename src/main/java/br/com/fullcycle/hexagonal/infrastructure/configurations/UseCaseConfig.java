@@ -40,6 +40,7 @@ public class UseCaseConfig {
 
     @Bean
     public CreatePartnerUseCase createPartnerUseCase() {
+        // TODO: Fix dependency
         return new CreatePartnerUseCase(null);
     }
 
@@ -51,11 +52,13 @@ public class UseCaseConfig {
 
     @Bean
     public GetPartnerByIdUseCase getPartnerByIdUseCase() {
+        // TODO: Fix dependency
         return new GetPartnerByIdUseCase(null);
     }
 
     @Bean
     public SubscribeCustomerToEventUseCase subscribeCustomerToEventUseCase() {
-        return new SubscribeCustomerToEventUseCase(customerService, eventService);
+        // TODO: Fix dependency
+        return new SubscribeCustomerToEventUseCase(null, null, null);
     }
 }

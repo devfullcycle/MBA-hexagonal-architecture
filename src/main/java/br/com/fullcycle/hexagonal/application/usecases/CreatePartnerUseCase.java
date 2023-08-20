@@ -1,7 +1,7 @@
 package br.com.fullcycle.hexagonal.application.usecases;
 
 import br.com.fullcycle.hexagonal.application.UseCase;
-import br.com.fullcycle.hexagonal.application.entities.Partner;
+import br.com.fullcycle.hexagonal.application.domain.Partner;
 import br.com.fullcycle.hexagonal.application.exceptions.ValidationException;
 import br.com.fullcycle.hexagonal.application.repositories.PartnerRepository;
 

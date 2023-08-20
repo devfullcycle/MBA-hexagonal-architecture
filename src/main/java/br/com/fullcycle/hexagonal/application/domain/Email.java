@@ -1,4 +1,4 @@
-package br.com.fullcycle.hexagonal.application.entities;
+package br.com.fullcycle.hexagonal.application.domain;
 
 import br.com.fullcycle.hexagonal.application.exceptions.ValidationException;
 

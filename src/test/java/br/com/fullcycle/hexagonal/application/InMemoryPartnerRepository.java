@@ -1,7 +1,7 @@
 package br.com.fullcycle.hexagonal.application;
 
-import br.com.fullcycle.hexagonal.application.entities.Partner;
-import br.com.fullcycle.hexagonal.application.entities.PartnerId;
+import br.com.fullcycle.hexagonal.application.domain.Partner;
+import br.com.fullcycle.hexagonal.application.domain.PartnerId;
 import br.com.fullcycle.hexagonal.application.repositories.PartnerRepository;
 
 import java.util.HashMap;
