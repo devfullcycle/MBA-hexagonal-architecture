@@ -3,11 +3,11 @@ package br.com.fullcycle.hexagonal.infrastructure.rest;
 import br.com.fullcycle.hexagonal.application.usecases.event.CreateEventUseCase;
 import br.com.fullcycle.hexagonal.infrastructure.dtos.NewEventDTO;
 import br.com.fullcycle.hexagonal.infrastructure.dtos.SubscribeDTO;
-import br.com.fullcycle.hexagonal.infrastructure.models.Customer;
-import br.com.fullcycle.hexagonal.infrastructure.models.Partner;
-import br.com.fullcycle.hexagonal.infrastructure.repositories.CustomerRepository;
-import br.com.fullcycle.hexagonal.infrastructure.repositories.EventRepository;
-import br.com.fullcycle.hexagonal.infrastructure.repositories.PartnerRepository;
+import br.com.fullcycle.hexagonal.infrastructure.jpa.entities.CustomerEntity;
+import br.com.fullcycle.hexagonal.infrastructure.jpa.entities.PartnerEntity;
+import br.com.fullcycle.hexagonal.infrastructure.jpa.repositories.CustomerJpaRepository;
+import br.com.fullcycle.hexagonal.infrastructure.jpa.repositories.EventJpaRepository;
+import br.com.fullcycle.hexagonal.infrastructure.jpa.repositories.PartnerJpaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,21 +32,21 @@ class EventControllerTest {
     private ObjectMapper mapper;
 
     @Autowired
-    private CustomerRepository customerRepository;
+    private CustomerJpaRepository customerRepository;
 
     @Autowired
-    private PartnerRepository partnerRepository;
+    private PartnerJpaRepository partnerRepository;
 
     @Autowired
-    private EventRepository eventRepository;
+    private EventJpaRepository eventRepository;
 
-    private Customer johnDoe;
-    private Partner disney;
+    private CustomerEntity johnDoe;
+    private PartnerEntity disney;
 
     @BeforeEach
     void setUp() {
-        johnDoe = customerRepository.save(new Customer(null, "John Doe", "123", "john@gmail.com"));
-        disney = partnerRepository.save(new Partner(null, "Disney", "456", "disney@gmail.com"));
+        johnDoe = customerRepository.save(new CustomerEntity(null, "John Doe", "123", "john@gmail.com"));
+        disney = partnerRepository.save(new PartnerEntity(null, "Disney", "456", "disney@gmail.com"));
     }
 
     @AfterEach

@@ -1,21 +1,20 @@
-package br.com.fullcycle.hexagonal.infrastructure.models;
+package br.com.fullcycle.hexagonal.infrastructure.jpa.entities;
 
+import br.com.fullcycle.hexagonal.application.domain.customer.Customer;
+import br.com.fullcycle.hexagonal.application.domain.customer.CustomerId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.util.Objects;
-
-import static jakarta.persistence.GenerationType.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "customers")
-public class Customer {
+public class CustomerEntity {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+    private UUID id;
 
     private String name;
 
@@ -23,21 +22,34 @@ public class Customer {
 
     private String email;
 
-    public Customer() {
+    public CustomerEntity() {
     }
 
-    public Customer(Long id, String name, String cpf, String email) {
+    public CustomerEntity(UUID id, String name, String cpf, String email) {
         this.id = id;
         this.name = name;
         this.cpf = cpf;
         this.email = email;
     }
 
-    public Long getId() {
+    public static CustomerEntity of(final Customer customer) {
+        return new CustomerEntity(
+                UUID.fromString(customer.customerId().value()),
+                customer.name().value(),
+                customer.cpf().value(),
+                customer.email().value()
+        );
+    }
+
+    public Customer toCustomer() {
+        return new Customer(CustomerId.with(this.id.toString()), this.name, this.cpf, this.email);
+    }
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -69,7 +81,7 @@ public class Customer {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Customer customer = (Customer) o;
+        CustomerEntity customer = (CustomerEntity) o;
         return Objects.equals(id, customer.id);
     }
 

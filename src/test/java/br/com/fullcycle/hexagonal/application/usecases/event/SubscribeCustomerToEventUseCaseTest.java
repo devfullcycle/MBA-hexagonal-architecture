@@ -1,16 +1,15 @@
 package br.com.fullcycle.hexagonal.application.usecases.event;
 
-import br.com.fullcycle.hexagonal.application.repository.InMemoryCustomerRepository;
-import br.com.fullcycle.hexagonal.application.repository.InMemoryEventRepository;
-import br.com.fullcycle.hexagonal.application.repository.InMemoryTicketRepository;
 import br.com.fullcycle.hexagonal.application.domain.customer.Customer;
 import br.com.fullcycle.hexagonal.application.domain.customer.CustomerId;
 import br.com.fullcycle.hexagonal.application.domain.event.Event;
 import br.com.fullcycle.hexagonal.application.domain.event.EventId;
+import br.com.fullcycle.hexagonal.application.domain.event.ticket.TicketStatus;
 import br.com.fullcycle.hexagonal.application.domain.partner.Partner;
 import br.com.fullcycle.hexagonal.application.exceptions.ValidationException;
-import br.com.fullcycle.hexagonal.application.usecases.event.SubscribeCustomerToEventUseCase;
-import br.com.fullcycle.hexagonal.infrastructure.models.TicketStatus;
+import br.com.fullcycle.hexagonal.application.repository.InMemoryCustomerRepository;
+import br.com.fullcycle.hexagonal.application.repository.InMemoryEventRepository;
+import br.com.fullcycle.hexagonal.application.repository.InMemoryTicketRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

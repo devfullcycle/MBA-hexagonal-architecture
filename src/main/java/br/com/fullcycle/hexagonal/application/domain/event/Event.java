@@ -90,6 +90,19 @@ public class Event {
         return Collections.unmodifiableSet(tickets);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return Objects.equals(eventId, event.eventId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventId);
+    }
+
     private void setName(final String name) {
         this.name = new Name(name);
     }
