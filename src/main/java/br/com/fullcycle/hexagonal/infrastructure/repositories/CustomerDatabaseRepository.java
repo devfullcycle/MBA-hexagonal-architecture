@@ -58,4 +58,9 @@ public class CustomerDatabaseRepository implements CustomerRepository {
         return this.customerJpaRepository.save(CustomerEntity.of(customer))
                 .toCustomer();
     }
+
+    @Override
+    public void deleteAll() {
+        this.customerJpaRepository.deleteAll();
+    }
 }
