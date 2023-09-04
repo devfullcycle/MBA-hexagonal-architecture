@@ -1,19 +1,16 @@
 package br.com.fullcycle.infrastructure.rest;
 
-import br.com.fullcycle.domain.exceptions.ValidationException;
 import br.com.fullcycle.application.event.CreateEventUseCase;
 import br.com.fullcycle.application.event.SubscribeCustomerToEventUseCase;
+import br.com.fullcycle.domain.exceptions.ValidationException;
 import br.com.fullcycle.infrastructure.dtos.NewEventDTO;
 import br.com.fullcycle.infrastructure.dtos.SubscribeDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.Objects;
-
-import static org.springframework.http.HttpStatus.CREATED;
 
 // Adapter
 @RestController
@@ -44,7 +41,6 @@ public class EventController {
         }
     }
 
-    @Transactional
     @PostMapping(value = "/{id}/subscribe")
     public ResponseEntity<?> subscribe(@PathVariable String id, @RequestBody SubscribeDTO dto) {
         try {
