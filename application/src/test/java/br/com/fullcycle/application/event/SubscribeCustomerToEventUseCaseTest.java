@@ -170,4 +170,35 @@ class SubscribeCustomerToEventUseCaseTest {
         // then
         Assertions.assertEquals(expectedError, actualException.getMessage());
     }
+
+    @Test
+    @DisplayName("NÃ£o deve comprar ticket de um evento cancelado")
+    public void testReserveTicketWhenEventIsCancelled() throws Exception {
+        // given
+        final var expectedError = "Event is cancelled";
+
+        final var aPartner = Partner.newPartner("John Doe", "41.536.538/0001-00", "john.doe@gmail.com");
+        final var anEvent = Event.newEvent("Disney on Ice", "2021-01-01", 10, aPartner);
+        final var aCustomer = Customer.newCustomer("Gabriel Doe", "123.456.789-01", "gabriel.doe@gmail.com");
+
+        final var customerID = aCustomer.customerId().value();
+        final var eventID = anEvent.eventId().value();
+
+        final var subscribeInput =
+                new SubscribeCustomerToEventUseCase.Input(customerID, eventID);
+
+        final var customerRepository = new InMemoryCustomerRepository();
+        final var eventRepository = new InMemoryEventRepository();
+
+        anEvent.cancel();
+        customerRepository.create(aCustomer);
+        eventRepository.create(anEvent);
+
+        // when
+        final var useCase = new SubscribeCustomerToEventUseCase(customerRepository, eventRepository);
+        final var actualException = Assertions.assertThrows(ValidationException.class, () -> useCase.execute(subscribeInput));
+
+        // then
+        Assertions.assertEquals(expectedError, actualException.getMessage());
+    }
 }

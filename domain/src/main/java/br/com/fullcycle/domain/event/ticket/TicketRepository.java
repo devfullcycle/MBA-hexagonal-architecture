@@ -11,6 +11,8 @@ public interface TicketRepository {
 
     List<Ticket> ticketsOfEventId(EventId eventId);
 
+    List<Ticket> allTickets();
+
     Ticket create(Ticket ticket);
 
     Ticket update(Ticket ticket);

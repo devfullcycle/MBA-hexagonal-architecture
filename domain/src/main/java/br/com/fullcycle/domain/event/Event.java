@@ -2,7 +2,6 @@ package br.com.fullcycle.domain.event;
 
 import br.com.fullcycle.domain.DomainEvent;
 import br.com.fullcycle.domain.customer.CustomerId;
-import br.com.fullcycle.domain.event.EventCancelled;
 import br.com.fullcycle.domain.exceptions.ValidationException;
 import br.com.fullcycle.domain.partner.Partner;
 import br.com.fullcycle.domain.partner.PartnerId;
@@ -27,6 +26,7 @@ public class Event {
     private LocalDate date;
     private int totalSpots;
     private PartnerId partnerId;
+    private EventStatus status;
 
     public Event(
             final EventId eventId,
@@ -41,6 +41,7 @@ public class Event {
         this.setDate(date);
         this.setTotalSpots(totalSpots);
         this.setPartnerId(partnerId);
+        this.setStatus(EventStatus.ACTIVE);
     }
 
     private Event(final EventId eventId, final Set<EventTicket> tickets) {
@@ -65,10 +66,28 @@ public class Event {
             final String partnerId,
             final Set<EventTicket> tickets
     ) {
-        return new Event(EventId.with(id), name, date, totalSpots, PartnerId.with(partnerId), tickets);
+        return restore(id, name, date, totalSpots, partnerId, EventStatus.ACTIVE.name(), tickets);
+    }
+
+    public static Event restore(
+            final String id,
+            final String name,
+            final String date,
+            final int totalSpots,
+            final String partnerId,
+            final String status,
+            final Set<EventTicket> tickets
+    ) {
+        final var anEvent = new Event(EventId.with(id), name, date, totalSpots, PartnerId.with(partnerId), tickets);
+        anEvent.setStatus(EventStatus.valueOf(status));
+        return anEvent;
     }
 
     public EventTicket reserveTicket(final CustomerId aCustomerId) {
+        if (isCancelled()) {
+            throw new ValidationException("Event is cancelled");
+        }
+
         this.allTickets().stream()
                 .filter(it -> Objects.equals(it.customerId(), aCustomerId))
                 .findFirst()
@@ -107,6 +126,14 @@ public class Event {
 
     public PartnerId partnerId() {
         return partnerId;
+    }
+
+    public EventStatus status() {
+        return status;
+    }
+
+    public boolean isCancelled() {
+        return EventStatus.CANCELLED.equals(this.status);
     }
 
     public Set<EventTicket> allTickets() {
@@ -162,7 +189,20 @@ public class Event {
         this.totalSpots = totalSpots;
     }
 
+    private void setStatus(final EventStatus status) {
+        if (status == null) {
+            throw new ValidationException("Invalid status for Event");
+        }
+
+        this.status = status;
+    }
+
     public void cancel() {
+        if (isCancelled()) {
+            throw new ValidationException("Event already cancelled");
+        }
+
+        this.status = EventStatus.CANCELLED;
         this.domainEvents.add(new EventCancelled(this.eventId));
     }
 }

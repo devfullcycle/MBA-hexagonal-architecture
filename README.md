@@ -19,6 +19,7 @@ Este projeto foi desenvolvido para demonstrar os princípios da arquitetura hexa
 - Criação de **Eventos** (Event)
 - Subscrição de Clientes em Eventos (SubscribeCustomerToEvent) com emissão de **Ingressos** (Tickets)
 - Cancelamento de eventos e ingressos
+- Consulta de evento por id com representação completa ou pública via header `X-Public`
 - Consultas via GraphQL
 
 ## Tecnologias Utilizadas
@@ -75,6 +76,10 @@ Este projeto foi desenvolvido para demonstrar os princípios da arquitetura hexa
   ```bash
   ./gradlew clean
   ```
+
+## Cancelamento de Eventos
+
+O cancelamento começa no `CancelEventUseCase`, que carrega o agregado `Event` e chama `event.cancel()`. O agregado muda para `CANCELLED` e registra o evento de domínio `EventCancelled` com o tipo `event.cancelled`. Ao salvar o evento, o `EventDatabaseRepository` grava esse evento na outbox; o `OutboxRelay` publica o JSON na fila via `QueueGateway`; e o `ConsumerQueueGateway` roteia `event.cancelled` para o `CancelEventTicketsUseCase`, que busca os ingressos pelo `eventId` na porta `TicketRepository` e cancela todos de forma idempotente.
 
 ## Estrutura de Arquitetura
 

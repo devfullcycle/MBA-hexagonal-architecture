@@ -25,12 +25,12 @@ public class CancelEventUseCase extends UseCase<CancelEventUseCase.Input, Cancel
 
         final var savedEvent = eventRepository.update(anEvent);
 
-        return new Output(savedEvent.eventId().value());
+        return new Output(savedEvent.eventId().value(), savedEvent.status().name());
     }
 
     public record Input(String id) {
     }
 
-    public record Output(String id) {
+    public record Output(String id, String status) {
     }
 }

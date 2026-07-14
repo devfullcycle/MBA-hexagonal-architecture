@@ -1,17 +1,21 @@
 package br.com.fullcycle.infrastructure.rest;
 
+import br.com.fullcycle.application.Presenter;
 import br.com.fullcycle.application.event.CancelEventUseCase;
 import br.com.fullcycle.application.event.CreateEventUseCase;
+import br.com.fullcycle.application.event.GetEventByIdUseCase;
 import br.com.fullcycle.application.event.SubscribeCustomerToEventUseCase;
 import br.com.fullcycle.domain.exceptions.ValidationException;
 import br.com.fullcycle.infrastructure.dtos.NewEventDTO;
 import br.com.fullcycle.infrastructure.dtos.SubscribeDTO;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 
 // Adapter
 @RestController
@@ -21,15 +25,24 @@ public class EventController {
     private final CreateEventUseCase createEventUseCase;
     private final SubscribeCustomerToEventUseCase subscribeCustomerToEventUseCase;
     private final CancelEventUseCase cancelEventUseCase;
+    private final GetEventByIdUseCase getEventByIdUseCase;
+    private final Presenter<Optional<GetEventByIdUseCase.Output>, Object> publicGetEventPresenter;
+    private final Presenter<Optional<GetEventByIdUseCase.Output>, Object> privateGetEventPresenter;
 
     public EventController(
             final CreateEventUseCase createEventUseCase,
             final SubscribeCustomerToEventUseCase subscribeCustomerToEventUseCase,
-            final CancelEventUseCase cancelEventUseCase
+            final CancelEventUseCase cancelEventUseCase,
+            final GetEventByIdUseCase getEventByIdUseCase,
+            @Qualifier("privateGetEvent") final Presenter<Optional<GetEventByIdUseCase.Output>, Object> privateGetEvent,
+            @Qualifier("publicGetEvent") final Presenter<Optional<GetEventByIdUseCase.Output>, Object> publicGetEvent
     ) {
         this.createEventUseCase = Objects.requireNonNull(createEventUseCase);
         this.subscribeCustomerToEventUseCase = Objects.requireNonNull(subscribeCustomerToEventUseCase);
         this.cancelEventUseCase = Objects.requireNonNull(cancelEventUseCase);
+        this.getEventByIdUseCase = Objects.requireNonNull(getEventByIdUseCase);
+        this.privateGetEventPresenter = Objects.requireNonNull(privateGetEvent);
+        this.publicGetEventPresenter = Objects.requireNonNull(publicGetEvent);
     }
 
     @PostMapping
@@ -60,10 +73,21 @@ public class EventController {
     @PostMapping(value = "/{id}/cancel")
     public ResponseEntity<?> cancel(@PathVariable String id) {
         try {
-            cancelEventUseCase.execute(new CancelEventUseCase.Input(id));
-            return ResponseEntity.ok().build();
+            final var output = cancelEventUseCase.execute(new CancelEventUseCase.Input(id));
+            return ResponseEntity.ok(output);
         } catch (ValidationException ex) {
             return ResponseEntity.unprocessableEntity().body(ex.getMessage());
         }
+    }
+
+    @GetMapping("/{id}")
+    public Object get(@PathVariable String id, @RequestHeader(name = "X-Public", required = false) String xPublic) {
+        Presenter<Optional<GetEventByIdUseCase.Output>, Object> presenter = privateGetEventPresenter;
+
+        if (xPublic != null) {
+            presenter = publicGetEventPresenter;
+        }
+
+        return getEventByIdUseCase.execute(new GetEventByIdUseCase.Input(id), presenter);
     }
 }

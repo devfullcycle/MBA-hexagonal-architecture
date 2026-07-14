@@ -48,8 +48,14 @@ public class TicketDatabaseRepository implements TicketRepository {
     @Override
     public List<Ticket> ticketsOfEventId(final EventId eventId) {
         Objects.requireNonNull(eventId, "eventId cannot be null");
+        return this.ticketJpaRepository.findByEventId(UUID.fromString(eventId.value())).stream()
+                .map(TicketEntity::toTicket)
+                .toList();
+    }
+
+    @Override
+    public List<Ticket> allTickets() {
         return StreamSupport.stream(this.ticketJpaRepository.findAll().spliterator(), false)
-                .filter(e -> e.eventId() != null && e.eventId().equals(UUID.fromString(eventId.value())))
                 .map(TicketEntity::toTicket)
                 .toList();
     }
