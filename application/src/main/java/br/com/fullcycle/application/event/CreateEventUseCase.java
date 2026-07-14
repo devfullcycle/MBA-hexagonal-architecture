@@ -32,13 +32,14 @@ public class CreateEventUseCase extends UseCase<CreateEventUseCase.Input, Create
                 input.date,
                 anEvent.name().value(),
                 anEvent.totalSpots(),
-                anEvent.partnerId().value()
+                anEvent.partnerId().value(),
+                anEvent.status().name()
         );
     }
 
     public record Input(String date, String name, String partnerId, Integer totalSpots) {
     }
 
-    public record Output(String id, String date, String name, int totalSpots, String partnerId) {
+    public record Output(String id, String date, String name, int totalSpots, String partnerId, String status) {
     }
 }

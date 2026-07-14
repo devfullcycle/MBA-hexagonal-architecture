@@ -5,6 +5,7 @@ import br.com.fullcycle.application.customer.CreateCustomerUseCase;
 import br.com.fullcycle.application.customer.GetCustomerByIdUseCase;
 import br.com.fullcycle.domain.exceptions.ValidationException;
 import br.com.fullcycle.infrastructure.dtos.NewCustomerDTO;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +26,8 @@ public class CustomerController {
     public CustomerController(
             final CreateCustomerUseCase createCustomerUseCase,
             final GetCustomerByIdUseCase getCustomerByIdUseCase,
-            final Presenter<Optional<GetCustomerByIdUseCase.Output>, Object> privateGetCustomer,
-            final Presenter<Optional<GetCustomerByIdUseCase.Output>, Object> publicGetCustomer
+            @Qualifier("privateGetCustomer") final Presenter<Optional<GetCustomerByIdUseCase.Output>, Object> privateGetCustomer,
+            @Qualifier("publicGetCustomer") final Presenter<Optional<GetCustomerByIdUseCase.Output>, Object> publicGetCustomer
     ) {
         this.publicGetCustomerPresenter = publicGetCustomer;
         this.privateGetCustomerPresenter = privateGetCustomer;

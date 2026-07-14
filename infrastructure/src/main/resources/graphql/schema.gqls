@@ -1,5 +1,6 @@
 type Query {
     customerOfId(id: ID!): Customer
+    eventOfId(id: ID!): Event
     partnerOfId(id: ID!): Partner
 }
 
@@ -7,6 +8,7 @@ type Mutation {
     createCustomer(input: CustomerInput): Customer!
     createEvent(input: EventInput): Event!
     createPartner(input: PartnerInput): Partner!
+    cancelEvent(id: ID!): CancelEventResult!
     subscribeCustomerToEvent(input: SubscribeInput): Subscribe!
 }
 
@@ -28,6 +30,12 @@ type Event {
     date: String!
     totalSpots: Int!
     name: String!
+    status: String
+}
+
+type CancelEventResult {
+    id: ID!
+    status: String!
 }
 
 input EventInput {

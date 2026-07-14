@@ -1,6 +1,7 @@
 package br.com.fullcycle.infrastructure.jpa.entities;
 
 import br.com.fullcycle.domain.event.Event;
+import br.com.fullcycle.domain.event.EventStatus;
 import br.com.fullcycle.domain.event.EventTicket;
 import jakarta.persistence.*;
 
@@ -27,6 +28,9 @@ public class EventEntity {
 
     private UUID partnerId;
 
+    @Enumerated(EnumType.STRING)
+    private EventStatus status;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "event")
     private Set<EventTicketEntity> tickets;
 
@@ -34,13 +38,14 @@ public class EventEntity {
         this.tickets = new HashSet<>();
     }
 
-    public EventEntity(UUID id, String name, LocalDate date, int totalSpots, UUID partnerId) {
+    public EventEntity(UUID id, String name, LocalDate date, int totalSpots, UUID partnerId, EventStatus status) {
         this();
         this.id = id;
         this.name = name;
         this.date = date;
         this.totalSpots = totalSpots;
         this.partnerId = partnerId;
+        this.status = status;
     }
 
     public static EventEntity of(final Event event) {
@@ -49,7 +54,8 @@ public class EventEntity {
                 event.name().value(),
                 event.date(),
                 event.totalSpots(),
-                UUID.fromString(event.partnerId().value())
+                UUID.fromString(event.partnerId().value()),
+                event.status()
         );
 
         event.allTickets().forEach(entity::addTicket);
@@ -64,6 +70,7 @@ public class EventEntity {
                 this.date().format(DateTimeFormatter.ISO_LOCAL_DATE),
                 this.totalSpots(),
                 this.partnerId().toString(),
+                this.status().name(),
                 this.tickets().stream()
                         .map(EventTicketEntity::toEventTicket)
                         .collect(Collectors.toSet())
@@ -112,6 +119,14 @@ public class EventEntity {
 
     public void setPartnerId(UUID partnerId) {
         this.partnerId = partnerId;
+    }
+
+    public EventStatus status() {
+        return status != null ? status : EventStatus.ACTIVE;
+    }
+
+    public void setStatus(EventStatus status) {
+        this.status = status;
     }
 
     public Set<EventTicketEntity> tickets() {

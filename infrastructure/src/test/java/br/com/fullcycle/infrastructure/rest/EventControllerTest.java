@@ -2,11 +2,14 @@ package br.com.fullcycle.infrastructure.rest;
 
 import br.com.fullcycle.domain.customer.Customer;
 import br.com.fullcycle.domain.event.EventId;
+import br.com.fullcycle.domain.event.EventStatus;
 import br.com.fullcycle.domain.partner.Partner;
 import br.com.fullcycle.domain.customer.CustomerRepository;
 import br.com.fullcycle.domain.event.EventRepository;
 import br.com.fullcycle.domain.partner.PartnerRepository;
 import br.com.fullcycle.application.event.CreateEventUseCase;
+import br.com.fullcycle.domain.event.Event;
+import br.com.fullcycle.domain.event.ticket.TicketRepository;
 import br.com.fullcycle.infrastructure.dtos.NewEventDTO;
 import br.com.fullcycle.infrastructure.dtos.SubscribeDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,12 +47,16 @@ class EventControllerTest {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private TicketRepository ticketRepository;
+
     private Customer johnDoe;
     private Partner disney;
 
     @BeforeEach
     void setUp() {
         eventRepository.deleteAll();
+        ticketRepository.deleteAll();
         customerRepository.deleteAll();
         partnerRepository.deleteAll();
 
@@ -72,10 +79,11 @@ class EventControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").isString())
                 .andReturn().getResponse().getContentAsByteArray();
 
-        var actualResponse = mapper.readValue(result, NewEventDTO.class);
+        var actualResponse = mapper.readValue(result, CreateEventUseCase.Output.class);
         Assertions.assertEquals(event.date(), actualResponse.date());
         Assertions.assertEquals(event.totalSpots(), actualResponse.totalSpots());
         Assertions.assertEquals(event.name(), actualResponse.name());
+        Assertions.assertEquals("ACTIVE", actualResponse.status());
     }
 
     @Test
@@ -108,5 +116,60 @@ class EventControllerTest {
 
         var actualEvent = eventRepository.eventOfId(EventId.with(eventId)).get();
         Assertions.assertEquals(1, actualEvent.allTickets().size());
+    }
+
+    @Test
+    @DisplayName("Deve cancelar um evento")
+    public void testCancelEvent() throws Exception {
+        // given
+        final var event = eventRepository.create(Event.newEvent("Disney on Ice", "2021-01-01", 100, disney));
+
+        // when
+        this.mvc.perform(MockMvcRequestBuilders.post("/events/{id}/cancel", event.eventId().value()))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(event.eventId().value()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value("CANCELLED"));
+
+        // then
+        var actualEvent = eventRepository.eventOfId(event.eventId()).get();
+        Assertions.assertEquals(EventStatus.CANCELLED, actualEvent.status());
+    }
+
+    @Test
+    @DisplayName("Deve consultar um evento por id com presenter completo")
+    public void testGetEventById() throws Exception {
+        // given
+        final var event = eventRepository.create(Event.newEvent("Disney on Ice", "2021-01-01", 100, disney));
+
+        // when/then
+        this.mvc.perform(MockMvcRequestBuilders.get("/events/{id}", event.eventId().value()))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(event.eventId().value()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Disney on Ice"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.date").value("2021-01-01"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalSpots").value(100))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value("ACTIVE"));
+    }
+
+    @Test
+    @DisplayName("Deve consultar um evento por id com presenter pÃºblico")
+    public void testGetEventByIdPublic() throws Exception {
+        // given
+        final var event = eventRepository.create(Event.newEvent("Disney on Ice", "2021-01-01", 100, disney));
+
+        // when/then
+        this.mvc.perform(MockMvcRequestBuilders.get("/events/{id}", event.eventId().value())
+                        .header("X-Public", "true"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(event.eventId().value()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value("ACTIVE"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Deve retornar 404 quando evento nÃ£o existe")
+    public void testGetEventByIdNotFound() throws Exception {
+        this.mvc.perform(MockMvcRequestBuilders.get("/events/{id}", EventId.unique().value()))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }

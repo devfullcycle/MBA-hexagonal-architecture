@@ -40,6 +40,7 @@ class CreateEventUseCaseTest {
         Assertions.assertEquals(expectedName, output.name());
         Assertions.assertEquals(expectedTotalSpots, output.totalSpots());
         Assertions.assertEquals(expectedPartnerId, output.partnerId());
+        Assertions.assertEquals("ACTIVE", output.status());
     }
 
     @Test
