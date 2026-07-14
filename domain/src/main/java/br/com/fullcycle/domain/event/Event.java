@@ -2,6 +2,7 @@ package br.com.fullcycle.domain.event;
 
 import br.com.fullcycle.domain.DomainEvent;
 import br.com.fullcycle.domain.customer.CustomerId;
+import br.com.fullcycle.domain.event.EventCancelled;
 import br.com.fullcycle.domain.exceptions.ValidationException;
 import br.com.fullcycle.domain.partner.Partner;
 import br.com.fullcycle.domain.partner.PartnerId;
@@ -159,5 +160,9 @@ public class Event {
         }
 
         this.totalSpots = totalSpots;
+    }
+
+    public void cancel() {
+        this.domainEvents.add(new EventCancelled(this.eventId));
     }
 }

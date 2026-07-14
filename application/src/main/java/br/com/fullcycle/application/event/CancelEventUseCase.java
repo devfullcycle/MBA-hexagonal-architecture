@@ -1,0 +1,36 @@
+package br.com.fullcycle.application.event;
+
+import br.com.fullcycle.application.UseCase;
+import br.com.fullcycle.domain.event.Event;
+import br.com.fullcycle.domain.event.EventId;
+import br.com.fullcycle.domain.event.EventRepository;
+import br.com.fullcycle.domain.exceptions.ValidationException;
+
+import java.util.Objects;
+
+public class CancelEventUseCase extends UseCase<CancelEventUseCase.Input, CancelEventUseCase.Output> {
+
+    private final EventRepository eventRepository;
+
+    public CancelEventUseCase(final EventRepository eventRepository) {
+        this.eventRepository = Objects.requireNonNull(eventRepository);
+    }
+
+    @Override
+    public Output execute(final Input input) {
+        final var anEvent = eventRepository.eventOfId(EventId.with(input.id))
+                .orElseThrow(() -> new ValidationException("Event not found"));
+
+        anEvent.cancel();
+
+        final var savedEvent = eventRepository.update(anEvent);
+
+        return new Output(savedEvent.eventId().value());
+    }
+
+    public record Input(String id) {
+    }
+
+    public record Output(String id) {
+    }
+}
