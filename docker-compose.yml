@@ -4,7 +4,21 @@ services:
   mysql:
     image: mysql:8.0.30-debian
     ports:
-      - 3306:3306
+      - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=events
+
+  gradle:
+    image: gradle:8.2.1-jdk17
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - gradle-cache:/home/gradle/.gradle
+    entrypoint: ["gradle"]
+    command: ["test"]
+    depends_on:
+      - mysql
+
+volumes:
+  gradle-cache:
