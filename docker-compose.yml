@@ -8,6 +8,11 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=events
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   gradle:
     image: gradle:8.2.1-jdk17
@@ -15,10 +20,29 @@ services:
     volumes:
       - .:/workspace
       - gradle-cache:/home/gradle/.gradle
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/events
     entrypoint: ["gradle"]
     command: ["test"]
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+
+  app:
+    image: gradle:8.2.1-jdk17
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - gradle-cache:/home/gradle/.gradle
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/events
+    ports:
+      - "8080:8080"
+    entrypoint: ["gradle"]
+    command: ["bootRun"]
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   gradle-cache:
