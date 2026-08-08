@@ -1,0 +1,39 @@
+@baseUrl = http://localhost:8080
+
+### Create customer
+< {%
+    const n = Date.now().toString().padStart(11, "0").slice(-11);
+    request.variables.set("cpf", n.slice(0,3) + "." + n.slice(3,6) + "." + n.slice(6,9) + "-" + n.slice(9,11));
+    request.variables.set("customerEmail", "john" + Date.now() + "@gmail.com");
+%}
+POST {{baseUrl}}/customers
+Content-Type: application/json
+
+{
+  "cpf": "{{cpf}}",
+  "email": "{{customerEmail}}",
+  "name": "John Doe"
+}
+
+> {%
+    client.test("customer created", function() {
+        client.assert(response.status === 201, "status is not 201");
+        client.assert(response.body.id != null, "missing customer id");
+    });
+    client.global.set("customerId", response.body.id);
+%}
+
+### Try to subscribe to the (already cancelled) event
+POST {{baseUrl}}/events/{{eventId}}/subscribe
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}"
+}
+
+> {%
+    client.test("subscribing to a cancelled event is rejected", function() {
+        client.assert(response.status === 422, "status is not 422");
+        client.assert(response.body === "Event is cancelled", "unexpected error message");
+    });
+%}

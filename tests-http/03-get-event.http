@@ -1,0 +1,33 @@
+@baseUrl = http://localhost:8080
+
+### Get event (full representation)
+GET {{baseUrl}}/events/{{eventId}}
+
+> {%
+    client.test("full representation shows CANCELLED", function() {
+        client.assert(response.status === 200, "status is not 200");
+        client.assert(response.body.status === "CANCELLED", "status is not CANCELLED");
+        client.assert(response.body.name != null, "name should be present in the full representation");
+    });
+%}
+
+### Get event (public/reduced representation)
+GET {{baseUrl}}/events/{{eventId}}
+X-Public: true
+
+> {%
+    client.test("public representation shows CANCELLED", function() {
+        client.assert(response.status === 200, "status is not 200");
+        client.assert(response.body.status === "CANCELLED", "status is not CANCELLED");
+        client.assert(response.body.name === undefined, "name should NOT be present in the public representation");
+    });
+%}
+
+### Get event that doesn't exist
+GET {{baseUrl}}/events/00000000-0000-0000-0000-000000000000
+
+> {%
+    client.test("not found returns 404", function() {
+        client.assert(response.status === 404, "status is not 404");
+    });
+%}

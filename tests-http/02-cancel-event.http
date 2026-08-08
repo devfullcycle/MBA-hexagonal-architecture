@@ -1,0 +1,21 @@
+@baseUrl = http://localhost:8080
+
+### Cancel event
+POST {{baseUrl}}/events/{{eventId}}/cancel
+
+> {%
+    client.test("event cancelled", function() {
+        client.assert(response.status === 200, "status is not 200");
+        client.assert(response.body.status === "CANCELLED", "status is not CANCELLED");
+    });
+%}
+
+### Cancel event again (should fail: already cancelled)
+POST {{baseUrl}}/events/{{eventId}}/cancel
+
+> {%
+    client.test("cancelling twice is rejected", function() {
+        client.assert(response.status === 422, "status is not 422");
+        client.assert(response.body === "Event already cancelled", "unexpected error message");
+    });
+%}
