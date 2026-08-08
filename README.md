@@ -1,22 +1,43 @@
-# Desafio: Cancelamento de Evento com Arquitetura Hexagonal & Clean
+# MBA Hexagonal Architecture - Cancelamento de Evento
 
+Projeto multi-modulo em **Java 17** e **Gradle** com **Hexagonal Architecture** e **Clean Architecture**.  
+Esta branch evolui o projeto do curso com a feature de **cancelamento de evento** e a cascata assíncrona que cancela os ingressos relacionados.
 
+## Visão geral
 
-## MBA Hexagonal Architecture: Cancelamento de Evento
+O fluxo do sistema é este:
 
-Projeto multi-módulo (Java 17 / Gradle) organizado em Arquitetura Hexagonal e Clean Architecture, com as camadas `domain`, `application` e `infrastructure` segregadas. Esta branch estende o projeto do curso com a feature de **cancelamento de evento**, incluindo a cascata assíncrona de cancelamento de ingressos.
+1. Parceiros criam eventos.
+2. Clientes se inscrevem nesses eventos.
+3. Quando um parceiro cancela um evento, o sistema bloqueia novas inscrições.
+4. O cancelamento dos ingressos acontece de forma assíncrona, reagindo a um evento de domínio.
 
-### Como subir o projeto
+Isso mantém `Event` e `Ticket` desacoplados e preserva a fronteira entre agregado, caso de uso e infraestrutura.
 
-O ambiente não depende de Java instalado localmente (tudo roda via Docker).
+## Arquitetura
 
-#### Rodar a suíte de testes
+O projeto está organizado em três módulos principais:
+
+- `domain` — entidades, value objects, eventos de domínio e regras de negócio.
+- `application` — casos de uso, inputs/outputs e contratos.
+- `infrastructure` — REST, GraphQL, persistência, fila, outbox e configurações.
+
+O cancelamento segue este caminho:
+
+1. `CancelEventUseCase` muda o status do evento para `CANCELLED`.
+2. O agregado publica `EventCancelled`.
+3. O `EventDatabaseRepository` persiste o evento na outbox.
+4. O `OutboxRelay` envia a mensagem para a fila.
+5. O `ConsumerQueueGateway` roteia `event.cancelled`.
+6. `CancelEventTicketsUseCase` cancela todos os ingressos do evento.
+
+## Como executar
+
+### Rodar os testes
 
 ```bash
 docker compose run --rm gradle test
 ```
-
-Isso sobe um container com Gradle 8.2.1 + JDK 17 (`docker compose run --rm gradle <task>` funciona para qualquer task, ex. `build`), monta o repositório em `/workspace` e usa um volume nomeado (`gradle-cache`) para cachear as dependências entre execuções. O MySQL do `docker-compose.yml` sobe como dependência do serviço `gradle`, mas os testes de integração usam H2 em memória (`infrastructure/src/main/resources/application-test.properties`), então o MySQL não é necessário para os testes.
 
 ### Subir a aplicação
 
@@ -24,12 +45,33 @@ Isso sobe um container com Gradle 8.2.1 + JDK 17 (`docker compose run --rm gradl
 docker compose up app
 ```
 
-Esse serviço (`app`, dedicado ao `bootRun`) já declara a porta 8080 no `docker-compose.yml`, e como estamos usando `docker compose up` (não `run`), a porta é publicada automaticamente no host. Ele também depende do `mysql` com healthcheck, então o banco sobe e fica pronto antes da aplicação tentar conectar. Para encerrar, `Ctrl+C` ou `docker compose down` em outro terminal.
+A API REST fica em `http://localhost:8080`.  
+O GraphiQL fica em `http://localhost:8080/graphiql`.
 
-A API REST fica disponível em `http://localhost:8080` e o GraphiQL em `http://localhost:8080/graphiql`.
+## Endpoints REST
 
-## Onde a cascata de cancelamento acontece
+- `POST /events` — cria um evento
+- `POST /events/{id}/subscribe` — inscreve um cliente
+- `POST /events/{id}/cancel` — cancela um evento
+- `GET /events/{id}` — consulta um evento
 
-Quando um parceiro cancela um evento (`CancelEventUseCase`), o agregado `Event` transita para o estado `CANCELLED` e registra o evento de domínio `EventCancelled` (`domain/.../event/EventCancelled.java`, `type = "event.cancelled"`). Esse evento é persistido na tabela `outbox` pelo `EventDatabaseRepository` — o `CancelEventUseCase` não toca no agregado `Ticket` em nenhum momento, síncrono ou não.
+O `GET /events/{id}` suporta a versão pública via header `X-Public`.
 
-O `OutboxRelay` publica periodicamente os eventos pendentes da outbox na fila (`QueueGateway`). O `ConsumerQueueGateway` roteia mensagens cujo conteúdo contém `"event.cancelled"` para o `CancelEventTicketsUseCase` (`application/.../ticket/CancelEventTicketsUseCase.java`), que busca todos os ingressos do evento (`TicketRepository.ticketsByEventId`) e cancela cada um (`Ticket.cancel()`, idempotente). É exatamente o mesmo molde do fluxo `EventTicketReserved → CreateTicketForCustomerUseCase` já existente no projeto, só que reagindo a um evento diferente — os agregados `Event` e `Ticket` seguem desacoplados, comunicando-se somente por eventos de domínio na fila.
+## GraphQL
+
+O módulo de infraestrutura também expõe a feature via GraphQL:
+
+- `createEvent`
+- `subscribeCustomerToEvent`
+- `cancelEvent`
+- `eventOfId`
+
+## Testes manuais
+
+A pasta `tests-http/` contém exemplos de chamadas HTTP para validar o fluxo completo:
+
+- criação de parceiros e eventos
+- cancelamento de eventos
+- consulta pública e privada de eventos
+- bloqueio de novas inscrições após cancelamento
+- fluxo completo via GraphQL: criação, consulta e cancelamento
