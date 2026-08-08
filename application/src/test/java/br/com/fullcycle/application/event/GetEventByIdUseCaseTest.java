@@ -15,7 +15,7 @@ class GetEventByIdUseCaseTest {
     @DisplayName("Deve obter um evento por id")
     public void testGetById() throws Exception {
         // given
-        final var aPartner = Partner.newPartner("Jão", "41.536.538/0001-00", "Jão@gmail.com");
+        final var aPartner = Partner.newPartner("Jão", "41.536.538/0001-00", "joao@gmail.com");
         final var anEvent = Event.newEvent("Disney on Ice", "2021-01-01", 10, aPartner);
 
         final var eventID = anEvent.eventId().value();
