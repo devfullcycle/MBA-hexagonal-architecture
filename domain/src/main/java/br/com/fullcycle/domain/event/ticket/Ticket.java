@@ -50,6 +50,14 @@ public class Ticket {
         return aTicket;
     }
 
+    public void cancel() {
+        if (TicketStatus.CANCELLED.equals(this.status)) {
+            return;
+        }
+
+        this.status = TicketStatus.CANCELLED;
+    }
+
     public TicketId ticketId() {
         return ticketId;
     }
