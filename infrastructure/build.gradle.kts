@@ -29,6 +29,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework:spring-webflux")
     testImplementation("org.springframework.graphql:spring-graphql-test")
+    testImplementation("org.awaitility:awaitility:4.2.0")
 
     testRuntimeOnly("com.h2database:h2")
 }

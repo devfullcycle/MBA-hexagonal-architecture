@@ -17,7 +17,7 @@ public class OutboxEntity {
     @Id
     private UUID id;
 
-    @Column(columnDefinition = "JSON", length = 4_000)
+    @Column(length = 4_000)
     private String content;
 
     private boolean published;
