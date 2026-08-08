@@ -4,6 +4,7 @@ import br.com.fullcycle.application.customer.CreateCustomerUseCase;
 import br.com.fullcycle.application.customer.GetCustomerByIdUseCase;
 import br.com.fullcycle.application.event.CancelEventUseCase;
 import br.com.fullcycle.application.event.CreateEventUseCase;
+import br.com.fullcycle.application.event.GetEventByIdUseCase;
 import br.com.fullcycle.application.event.SubscribeCustomerToEventUseCase;
 import br.com.fullcycle.application.partner.CreatePartnerUseCase;
 import br.com.fullcycle.application.partner.GetPartnerByIdUseCase;
@@ -51,6 +52,11 @@ public class UseCaseConfig {
     @Bean
     public CancelEventUseCase cancelEventUseCase() {
         return new CancelEventUseCase(eventRepository);
+    }
+
+    @Bean
+    public GetEventByIdUseCase getEventByIdUseCase() {
+        return new GetEventByIdUseCase(eventRepository);
     }
 
     @Bean
