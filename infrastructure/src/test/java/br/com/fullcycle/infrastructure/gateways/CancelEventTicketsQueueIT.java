@@ -143,12 +143,9 @@ class CancelEventTicketsQueueIT extends IntegrationTest {
         outboxJpaRepository.findAll().forEach(outbox::add);
 
         Assertions.assertTrue(
-                outbox.stream().anyMatch(it -> it.content().contains("event.cancelled")),
-                "a outbox deveria conter o evento de dominio event.cancelled"
-        );
-        Assertions.assertTrue(
-                outbox.stream().anyMatch(it -> it.content().contains(anEvent.eventId().value())),
-                "a outbox deveria conter o id do evento cancelado"
+                outbox.stream().anyMatch(it -> it.content().contains("event.cancelled")
+                        && it.content().contains(anEvent.eventId().value())),
+                "a outbox deveria conter o evento de dominio event.cancelled do evento cancelado"
         );
     }
 }

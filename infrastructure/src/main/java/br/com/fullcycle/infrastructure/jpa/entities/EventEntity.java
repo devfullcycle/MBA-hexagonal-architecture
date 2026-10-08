@@ -70,6 +70,7 @@ public class EventEntity {
                 this.date().format(DateTimeFormatter.ISO_LOCAL_DATE),
                 this.totalSpots(),
                 this.partnerId().toString(),
+                // linhas anteriores a coluna status: ddl-auto=update nao faz backfill
                 this.status() != null ? this.status().name() : EventStatus.ACTIVE.name(),
                 this.tickets().stream()
                         .map(EventTicketEntity::toEventTicket)

@@ -162,6 +162,36 @@ class EventControllerTest {
     }
 
     @Test
+    @DisplayName("Não deve inscrever um cliente em um evento cancelado")
+    public void testSubscribeToCancelledEvent() throws Exception {
+
+        var event = new NewEventDTO("Disney on Ice", "2021-01-01", 100, disney.partnerId().value());
+
+        final var createResult = this.mvc.perform(
+                        MockMvcRequestBuilders.post("/events")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(event))
+                )
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturn().getResponse().getContentAsByteArray();
+
+        var eventId = mapper.readValue(createResult, CreateEventUseCase.Output.class).id();
+
+        this.mvc.perform(MockMvcRequestBuilders.post("/events/{id}/cancel", eventId))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        var sub = new SubscribeDTO(johnDoe.customerId().value(), null);
+
+        this.mvc.perform(
+                        MockMvcRequestBuilders.post("/events/{id}/subscribe", eventId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsString(sub))
+                )
+                .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
+                .andExpect(MockMvcResultMatchers.content().string("Event is cancelled"));
+    }
+
+    @Test
     @DisplayName("Deve obter um evento por id")
     public void testGet() throws Exception {
 

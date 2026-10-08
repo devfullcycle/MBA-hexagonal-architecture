@@ -2,6 +2,7 @@ package br.com.fullcycle.application.usecases;
 
 import br.com.fullcycle.IntegrationTest;
 import br.com.fullcycle.application.event.CancelEventUseCase;
+import br.com.fullcycle.application.event.SubscribeCustomerToEventUseCase;
 import br.com.fullcycle.domain.customer.Customer;
 import br.com.fullcycle.domain.customer.CustomerRepository;
 import br.com.fullcycle.domain.event.Event;
@@ -21,6 +22,9 @@ class CancelEventUseCaseIT extends IntegrationTest {
 
     @Autowired
     private CancelEventUseCase useCase;
+
+    @Autowired
+    private SubscribeCustomerToEventUseCase subscribeCustomerToEventUseCase;
 
     @Autowired
     private EventRepository eventRepository;
@@ -89,6 +93,14 @@ class CancelEventUseCaseIT extends IntegrationTest {
 
         // then
         Assertions.assertEquals(expectedError, actualException.getMessage());
+
+        final var useCaseException = Assertions.assertThrows(
+                ValidationException.class,
+                () -> subscribeCustomerToEventUseCase.execute(
+                        new SubscribeCustomerToEventUseCase.Input(johnDoe.customerId().value(), anEvent.eventId().value())
+                )
+        );
+        Assertions.assertEquals(expectedError, useCaseException.getMessage());
     }
 
     @Test

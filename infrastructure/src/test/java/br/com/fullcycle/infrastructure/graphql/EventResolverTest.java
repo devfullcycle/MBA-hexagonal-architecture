@@ -6,19 +6,18 @@ import br.com.fullcycle.domain.event.EventId;
 import br.com.fullcycle.domain.event.EventRepository;
 import br.com.fullcycle.domain.partner.Partner;
 import br.com.fullcycle.domain.partner.PartnerRepository;
+import br.com.fullcycle.infrastructure.jpa.repositories.OutboxJpaRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.graphql.tester.AutoConfigureGraphQlTester;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@AutoConfigureMockMvc
 @AutoConfigureGraphQlTester
 @SpringBootTest
 class EventResolverTest {
@@ -35,10 +34,14 @@ class EventResolverTest {
     @Autowired
     private PartnerRepository partnerRepository;
 
+    @Autowired
+    private OutboxJpaRepository outboxJpaRepository;
+
     private Partner disney;
 
     @BeforeEach
     void setUp() {
+        outboxJpaRepository.deleteAll();
         eventRepository.deleteAll();
         customerRepository.deleteAll();
         partnerRepository.deleteAll();
@@ -102,6 +105,26 @@ class EventResolverTest {
                 .path("eventOfId.date").entity(String.class).isEqualTo("2021-01-01")
                 .path("eventOfId.totalSpots").entity(Integer.class).isEqualTo(100)
                 .path("eventOfId.status").entity(String.class).isEqualTo("ACTIVE");
+    }
+
+    @Test
+    @DisplayName("Deve retornar nulo ao obter um evento que não existe via GraphQL")
+    public void testEventOfIdNotFound() throws Exception {
+        // given
+        final var query = """
+                query EventOfId($id: ID!) {
+                    eventOfId(id: $id) {
+                        id
+                        status
+                    }
+                }
+                """;
+
+        // when / then
+        this.graphql.document(query)
+                .variable("id", EventId.unique().value())
+                .execute()
+                .path("eventOfId").valueIsNull();
     }
 
     @Test
