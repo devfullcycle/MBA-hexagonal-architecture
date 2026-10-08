@@ -1,5 +1,6 @@
 HELP.md
 .gradle
+.superpowers/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
