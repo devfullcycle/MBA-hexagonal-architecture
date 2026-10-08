@@ -26,6 +26,7 @@ public class Event {
     private LocalDate date;
     private int totalSpots;
     private PartnerId partnerId;
+    private EventStatus status;
 
     public Event(
             final EventId eventId,
@@ -33,6 +34,7 @@ public class Event {
             final String date,
             final Integer totalSpots,
             final PartnerId partnerId,
+            final String status,
             final Set<EventTicket> tickets
     ) {
         this(eventId, tickets);
@@ -40,6 +42,7 @@ public class Event {
         this.setDate(date);
         this.setTotalSpots(totalSpots);
         this.setPartnerId(partnerId);
+        this.setStatus(status);
     }
 
     private Event(final EventId eventId, final Set<EventTicket> tickets) {
@@ -53,7 +56,7 @@ public class Event {
     }
 
     public static Event newEvent(final String name, final String date, final Integer totalSpots, final Partner partner) {
-        return new Event(EventId.unique(), name, date, totalSpots, partner.partnerId(), null);
+        return new Event(EventId.unique(), name, date, totalSpots, partner.partnerId(), EventStatus.ACTIVE.name(), null);
     }
 
     public static Event restore(
@@ -62,12 +65,17 @@ public class Event {
             final String date,
             final int totalSpots,
             final String partnerId,
+            final String status,
             final Set<EventTicket> tickets
     ) {
-        return new Event(EventId.with(id), name, date, totalSpots, PartnerId.with(partnerId), tickets);
+        return new Event(EventId.with(id), name, date, totalSpots, PartnerId.with(partnerId), status, tickets);
     }
 
     public EventTicket reserveTicket(final CustomerId aCustomerId) {
+        if (isCancelled()) {
+            throw new ValidationException("Event is cancelled");
+        }
+
         this.allTickets().stream()
                 .filter(it -> Objects.equals(it.customerId(), aCustomerId))
                 .findFirst()
@@ -86,6 +94,23 @@ public class Event {
         this.domainEvents.add(new EventTicketReserved(aTicket.eventTicketId(), eventId(), aCustomerId));
 
         return aTicket;
+    }
+
+    public void cancel() {
+        if (isCancelled()) {
+            throw new ValidationException("Event already cancelled");
+        }
+
+        this.status = EventStatus.CANCELLED;
+        this.domainEvents.add(new EventCancelled(eventId()));
+    }
+
+    public EventStatus status() {
+        return status;
+    }
+
+    public boolean isCancelled() {
+        return EventStatus.CANCELLED == this.status;
     }
 
     public EventId eventId() {
@@ -159,5 +184,17 @@ public class Event {
         }
 
         this.totalSpots = totalSpots;
+    }
+
+    private void setStatus(final String status) {
+        if (status == null) {
+            throw new ValidationException("Invalid status for Event");
+        }
+
+        try {
+            this.status = EventStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new ValidationException("Invalid status for Event", ex);
+        }
     }
 }
