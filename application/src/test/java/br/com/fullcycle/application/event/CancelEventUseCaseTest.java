@@ -1,0 +1,109 @@
+package br.com.fullcycle.application.event;
+
+import br.com.fullcycle.application.repository.InMemoryEventRepository;
+import br.com.fullcycle.domain.event.Event;
+import br.com.fullcycle.domain.event.EventId;
+import br.com.fullcycle.domain.event.EventStatus;
+import br.com.fullcycle.domain.exceptions.ValidationException;
+import br.com.fullcycle.domain.partner.Partner;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+class CancelEventUseCaseTest {
+
+    @Test
+    @DisplayName("Deve cancelar um evento")
+    public void testCancelEvent() throws Exception {
+        // given
+        final var aPartner = Partner.newPartner("John Doe", "41.536.538/0001-00", "john.doe@gmail.com");
+        final var anEvent = Event.newEvent("Disney on Ice", "2021-01-01", 10, aPartner);
+
+        final var eventID = anEvent.eventId().value();
+        final var expectedStatus = EventStatus.CANCELLED.name();
+
+        final var eventRepository = new InMemoryEventRepository();
+        eventRepository.create(anEvent);
+
+        final var cancelInput = new CancelEventUseCase.Input(eventID);
+
+        // when
+        final var useCase = new CancelEventUseCase(eventRepository);
+        final var output = useCase.execute(cancelInput);
+
+        // then
+        Assertions.assertEquals(eventID, output.id());
+        Assertions.assertEquals(expectedStatus, output.status());
+
+        final var actualEvent = eventRepository.eventOfId(anEvent.eventId()).get();
+        Assertions.assertTrue(actualEvent.isCancelled());
+    }
+
+    @Test
+    @DisplayName("Deve registrar o evento de domínio event.cancelled ao cancelar")
+    public void testCancelEventRegistersDomainEvent() throws Exception {
+        // given
+        final var aPartner = Partner.newPartner("John Doe", "41.536.538/0001-00", "john.doe@gmail.com");
+        final var anEvent = Event.newEvent("Disney on Ice", "2021-01-01", 10, aPartner);
+
+        final var expectedDomainEvent = "event.cancelled";
+
+        final var eventRepository = new InMemoryEventRepository();
+        eventRepository.create(anEvent);
+
+        final var cancelInput = new CancelEventUseCase.Input(anEvent.eventId().value());
+
+        // when
+        final var useCase = new CancelEventUseCase(eventRepository);
+        useCase.execute(cancelInput);
+
+        // then
+        final var actualEvent = eventRepository.eventOfId(anEvent.eventId()).get();
+        Assertions.assertEquals(1, actualEvent.allDomainEvents().size());
+        Assertions.assertEquals(expectedDomainEvent, actualEvent.allDomainEvents().iterator().next().type());
+    }
+
+    @Test
+    @DisplayName("Não deve cancelar um evento que não existe")
+    public void testCancelEventWithoutEvent() throws Exception {
+        // given
+        final var expectedError = "Event not found";
+
+        final var eventRepository = new InMemoryEventRepository();
+
+        final var cancelInput = new CancelEventUseCase.Input(EventId.unique().value());
+
+        // when
+        final var useCase = new CancelEventUseCase(eventRepository);
+        final var actualException =
+                Assertions.assertThrows(ValidationException.class, () -> useCase.execute(cancelInput));
+
+        // then
+        Assertions.assertEquals(expectedError, actualException.getMessage());
+    }
+
+    @Test
+    @DisplayName("Não deve cancelar um evento já cancelado")
+    public void testCancelEventAlreadyCancelled() throws Exception {
+        // given
+        final var expectedError = "Event already cancelled";
+
+        final var aPartner = Partner.newPartner("John Doe", "41.536.538/0001-00", "john.doe@gmail.com");
+        final var anEvent = Event.newEvent("Disney on Ice", "2021-01-01", 10, aPartner);
+
+        final var eventRepository = new InMemoryEventRepository();
+        eventRepository.create(anEvent);
+
+        final var cancelInput = new CancelEventUseCase.Input(anEvent.eventId().value());
+
+        final var useCase = new CancelEventUseCase(eventRepository);
+        useCase.execute(cancelInput);
+
+        // when
+        final var actualException =
+                Assertions.assertThrows(ValidationException.class, () -> useCase.execute(cancelInput));
+
+        // then
+        Assertions.assertEquals(expectedError, actualException.getMessage());
+    }
+}
