@@ -2,9 +2,9 @@ version: '3'
 
 services:
   mysql:
-    image: mysql:8.0.30-debian
+    image:  mysql:9.7.2-oracle
     ports:
-      - 3306:3306
+      - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=events
