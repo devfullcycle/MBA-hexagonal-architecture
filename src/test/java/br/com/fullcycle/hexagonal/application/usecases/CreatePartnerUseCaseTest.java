@@ -51,7 +51,7 @@ public class CreatePartnerUseCaseTest {
     public void testCreateWithDuplicatedCNPJShouldFail() {
 
         // given
-        final String expectedCNPJ = "12345678901";
+        final String expectedCNPJ = "41536538000100";
         final String expectedEmail = "john.doe@gmail.com";
         final String expectedName = "John Doe";
 
@@ -78,7 +78,7 @@ public class CreatePartnerUseCaseTest {
     public void testCreateWithDuplicatedEmailShouldFail() {
 
         // given
-        final String expectedCNPJ = "12345678901";
+        final String expectedCNPJ = "41536538000100";
         final String expectedEmail = "john.doe@gmail.com";
         final String expectedName = "John Doe";
 
